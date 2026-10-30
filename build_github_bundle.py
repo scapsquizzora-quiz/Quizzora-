@@ -119,7 +119,31 @@ const App = {{
     }},
     adminToken: null,
 
-    async init() {{
+    async 
+    toggleMobileMenu() {{
+        const drawer = document.getElementById('mobile-nav-drawer');
+        const backdrop = document.getElementById('mobile-nav-backdrop');
+        if (drawer && backdrop) {{
+            const isOpen = drawer.classList.contains('active');
+            if (isOpen) {{
+                this.closeMobileMenu();
+            }} else {{
+                drawer.classList.add('active');
+                backdrop.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }}
+        }}
+    }},
+
+    closeMobileMenu() {{
+        const drawer = document.getElementById('mobile-nav-drawer');
+        const backdrop = document.getElementById('mobile-nav-backdrop');
+        if (drawer) drawer.classList.remove('active');
+        if (backdrop) backdrop.classList.remove('active');
+        document.body.style.overflow = '';
+    }},
+
+    init() {{
         this.bindEvents();
         this.initCountdown();
         this.initQuestionBank();
@@ -269,13 +293,14 @@ const App = {{
             window.scrollTo({{ top: 0, behavior: 'smooth' }});
         }}
 
-        document.querySelectorAll('.nav-link').forEach(link => {{
+        document.querySelectorAll('.nav-link, .mobile-nav-link').forEach(link => {{
             if (link.getAttribute('data-view') === viewId) {{
                 link.classList.add('active');
             }} else {{
                 link.classList.remove('active');
             }}
         }});
+        this.closeMobileMenu();
 
         if (viewId === 'view-leaderboard') {{
             const activeTab = document.querySelector('.lb-tab.active')?.getAttribute('data-category') || 'all';
@@ -511,7 +536,7 @@ const App = {{
         }}
     }},
 
-        filterCentres(district) {{
+    filterCentres(district) {{
         document.querySelectorAll('.centre-filter-btn').forEach(btn => {{
             if (btn.getAttribute('data-filter') === district) {{
                 btn.classList.add('active');
@@ -520,7 +545,7 @@ const App = {{
             }}
         }});
 
-        // Filter Table Rows
+        // Filter Table Rows if present
         document.querySelectorAll('.centre-table-row').forEach(row => {{
             const rowDistrict = row.getAttribute('data-district');
             if (district === 'all' || rowDistrict === district) {{
@@ -530,21 +555,39 @@ const App = {{
             }}
         }});
 
-        // Filter Directory Cards
-        document.querySelectorAll('.centre-card, .centre-dir-card').forEach(card => {{
+        // Filter Directory Cards with count tracking
+        let visibleCount = 0;
+        document.querySelectorAll('.centres-directory-grid .centre-dir-card').forEach(card => {{
             const cardDistrict = card.getAttribute('data-district');
             if (district === 'all' || cardDistrict === district) {{
                 card.style.display = 'flex';
+                visibleCount++;
             }} else {{
                 card.style.display = 'none';
             }}
         }});
+
+        const countEl = document.getElementById('centre-results-count');
+        if (countEl) {{
+            if (district === 'all') {{
+                countEl.textContent = `Showing all ${{visibleCount}} examination centres across Kottayam, Idukki, Pathanamthitta & Ernakulam`;
+            }} else {{
+                const names = {{
+                    kottayam: 'Kottayam District',
+                    idukki: 'Idukki District',
+                    pathanamthitta: 'Pathanamthitta District',
+                    ernakulam: 'Ernakulam District',
+                    campus: 'Marian College Campus'
+                }};
+                countEl.textContent = `Showing ${{visibleCount}} official examination centre(s) for ${{names[district] || district}}`;
+            }}
+        }}
     }},
 
     searchCentres(query) {{
         const q = (query || '').toLowerCase().trim();
 
-        // Search Table Rows
+        // Search Table Rows if present
         document.querySelectorAll('.centre-table-row').forEach(row => {{
             const text = row.textContent.toLowerCase();
             if (!q || text.includes(q)) {{
@@ -554,15 +597,26 @@ const App = {{
             }}
         }});
 
-        // Search Directory Cards
-        document.querySelectorAll('.centre-card, .centre-dir-card').forEach(card => {{
+        // Search Directory Cards with count tracking
+        let visibleCount = 0;
+        document.querySelectorAll('.centres-directory-grid .centre-dir-card').forEach(card => {{
             const text = card.textContent.toLowerCase();
             if (!q || text.includes(q)) {{
                 card.style.display = 'flex';
+                visibleCount++;
             }} else {{
                 card.style.display = 'none';
             }}
         }});
+
+        const countEl = document.getElementById('centre-results-count');
+        if (countEl) {{
+            if (!q) {{
+                countEl.textContent = `Showing all ${{visibleCount}} examination centres across Kottayam, Idukki, Pathanamthitta & Ernakulam`;
+            }} else {{
+                countEl.textContent = `Found ${{visibleCount}} matching centre(s) for "${{query}}"`;
+            }}
+        }}
     }},
 
     handleIncomingChallenge(chalId) {{
