@@ -119,7 +119,6 @@ const App = {{
     }},
     adminToken: null,
 
-    async 
     toggleMobileMenu() {{
         const drawer = document.getElementById('mobile-nav-drawer');
         const backdrop = document.getElementById('mobile-nav-backdrop');
@@ -143,7 +142,7 @@ const App = {{
         document.body.style.overflow = '';
     }},
 
-    init() {{
+    async init() {{
         this.bindEvents();
         this.initCountdown();
         this.initQuestionBank();
@@ -616,6 +615,22 @@ const App = {{
             }} else {{
                 countEl.textContent = `Found ${{visibleCount}} matching centre(s) for "${{query}}"`;
             }}
+        }}
+    }},
+
+    checkUrlParams() {{
+        try {{
+            const urlParams = new URLSearchParams(window.location.search);
+            const chal = urlParams.get('challenge');
+            if (chal) {{
+                this.handleIncomingChallenge(chal);
+            }}
+            const view = urlParams.get('view');
+            if (view && document.getElementById(view)) {{
+                this.showView(view);
+            }}
+        }} catch (e) {{
+            console.warn('URL params check error:', e);
         }}
     }},
 
